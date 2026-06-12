@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quorum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/web/styles.css">
+</head>
+<body>
+  <!-- Quill, the Quorum mascot (original art): a little form-paper with a folded
+       corner and a checkmark badge. Cloned into every [data-mascot] slot. -->
+  <template id="mascot-template">
+    <svg class="mascot" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <path class="m-body" d="M15 6 H29 L40 17 V34 Q40 42 32 42 H15 Q8 42 8 35 V13 Q8 6 15 6 Z"/>
+      <path class="m-fold" d="M29 6 L40 17 H32 Q29 17 29 14 Z"/>
+      <g class="m-eyes">
+        <circle cx="19" cy="23" r="2.4"/>
+        <circle cx="28" cy="23" r="2.4"/>
+      </g>
+      <path class="m-smile" d="M19 29.5 Q23.5 33.5 28 29.5"/>
+      <g class="m-badge">
+        <circle cx="38" cy="38" r="7"/>
+        <path class="m-check" d="M34.8 38.2 l2.3 2.3 4.1-4.7"/>
+      </g>
+    </svg>
+  </template>
+
+  <div class="app">
+    <!-- ── App rail ─────────────────────────────────────────────── -->
+    <nav class="rail" aria-label="App">
+      <button class="rail-btn app-btn is-active" data-tip="Quorum" aria-label="Quorum">
+        <span class="mascot-wrap" data-mascot></span>
+      </button>
+      <div class="rail-spacer"></div>
+      <button id="theme-toggle" class="rail-btn" data-tip="Toggle theme" aria-label="Toggle theme">
+        <i data-lucide="sun" class="icon-sun"></i>
+        <i data-lucide="moon" class="icon-moon"></i>
+      </button>
+      <button id="about-btn" class="rail-btn" data-tip="About" aria-label="About Quorum">
+        <i data-lucide="info"></i>
+      </button>
+    </nav>
+
+    <!-- ── Sidebar: run controls ────────────────────────────────── -->
+    <aside class="sidebar" aria-label="Run controls">
+      <header class="sidebar-head">
+        <span class="mascot-wrap mascot-tiny" data-mascot></span>
+        <h1>Run</h1>
+      </header>
+
+      <div class="controls">
+        <div class="field">
+          <label for="profile">Profile</label>
+          <div class="profile-row">
+            <div class="select-wrap">
+              <select id="profile"></select>
+              <i data-lucide="chevron-down" aria-hidden="true"></i>
+            </div>
+            <button id="reload" class="icon-btn" aria-label="Reload profiles" data-tip="Reload profiles">
+              <i data-lucide="refresh-cw"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="count">Submissions</label>
+          <div class="stepper">
+            <button type="button" class="step-btn" data-for="count" data-step="-1" aria-label="Decrease submissions"><i data-lucide="minus"></i></button>
+            <input id="count" type="number" inputmode="numeric" min="1" step="1" value="10">
+            <button type="button" class="step-btn" data-for="count" data-step="1" aria-label="Increase submissions"><i data-lucide="plus"></i></button>
+          </div>
+        </div>
+
+        <div class="field-pair">
+          <div class="field">
+            <label for="min-delay">Delay min (s)</label>
+            <div class="stepper">
+              <button type="button" class="step-btn" data-for="min-delay" data-step="-0.5" aria-label="Decrease minimum delay"><i data-lucide="minus"></i></button>
+              <input id="min-delay" type="number" inputmode="decimal" min="0" step="0.5" value="2">
+              <span class="suffix" aria-hidden="true">s</span>
+              <button type="button" class="step-btn" data-for="min-delay" data-step="0.5" aria-label="Increase minimum delay"><i data-lucide="plus"></i></button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="max-delay">Delay max (s)</label>
+            <div class="stepper">
+              <button type="button" class="step-btn" data-for="max-delay" data-step="-0.5" aria-label="Decrease maximum delay"><i data-lucide="minus"></i></button>
+              <input id="max-delay" type="number" inputmode="decimal" min="0" step="0.5" value="6">
+              <span class="suffix" aria-hidden="true">s</span>
+              <button type="button" class="step-btn" data-for="max-delay" data-step="0.5" aria-label="Increase maximum delay"><i data-lucide="plus"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field toggle-field">
+          <label id="headless-label" for="headless">Run hidden</label>
+          <button id="headless" class="pill-toggle" role="switch" aria-checked="true" aria-labelledby="headless-label">
+            <span class="knob"></span>
+          </button>
+        </div>
+      </div>
+
+      <footer class="sidebar-foot">
+        <button id="start" class="btn btn-primary">
+          <span class="spinner" aria-hidden="true" hidden></span>
+          <span class="btn-label">Start</span>
+        </button>
+        <button id="stop" class="btn btn-danger" disabled>Stop</button>
+      </footer>
+    </aside>
+
+    <!-- ── Main: live console ───────────────────────────────────── -->
+    <main class="main">
+      <header class="channel-head">
+        <div class="channel-name">
+          <i data-lucide="hash" aria-hidden="true"></i>
+          <span id="channel-label">submissions</span>
+          <span id="head-mascot" class="mascot-wrap mascot-head" data-mascot hidden></span>
+        </div>
+        <div class="progress-zone">
+          <div class="progress-track" role="progressbar" aria-label="Run progress"
+               aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <span class="counter mono" id="counter">0 / 0</span>
+          <span class="tallies mono" id="tallies">
+            <span class="t-ok">ok 0</span><span class="t-sep"> / </span><span class="t-skip">skipped 0</span>
+          </span>
+        </div>
+      </header>
+
+      <div id="log" class="log" role="log" aria-live="polite">
+        <div class="empty" id="empty">
+          <span class="mascot-wrap mascot-big m-idle" data-mascot></span>
+          <p class="empty-title" id="empty-title">Ready when you are.</p>
+          <p class="empty-how" id="empty-how">
+            Run <code>playwright codegen &lt;form url&gt;</code>, drop a file in
+            <code>profiles/</code>, hit Reload.
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="about" class="about" aria-labelledby="about-title">
+    <div class="about-body">
+      <span class="mascot-wrap mascot-about" data-mascot></span>
+      <h2 id="about-title">Quorum</h2>
+      <p class="about-tag">submit, again.</p>
+      <p>
+        A local tool that submits a Microsoft Form a configurable number of
+        times, for open forms whose owners invite repeat submissions. Add a
+        profile file per form; the engine and UI never change.
+      </p>
+      <p class="about-fine">
+        Be polite: keep counts modest and delays generous. Automated submission
+        is against Microsoft's ToS, and high rates get rate-limited.
+      </p>
+      <button id="about-close" class="btn btn-primary">Close</button>
+    </div>
+  </dialog>
+
+  <div id="announcer" class="visually-hidden" role="status" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/web/app.js"></script>
+</body>
+</html>

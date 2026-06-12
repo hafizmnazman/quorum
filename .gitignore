@@ -1,0 +1,17 @@
+# build brief / scratch notes
+implementation.md
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# personal form profiles stay local (they contain your form URLs);
+# only the template ships. Delete these two lines to commit yours.
+profiles/*
+!profiles/example_form.py
+
+# OS junk
+Thumbs.db
+.DS_Store

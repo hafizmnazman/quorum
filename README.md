@@ -1,39 +1,30 @@
 # Quorum
 
-A small local web app that submits a Microsoft Form a configurable number of times, with a live-streaming, Discord-style console. *submit, again.*
+A small local web app that submits a Microsoft Form over and over for you, with a live console so you can watch it go.
 
-> For open, anonymous forms whose owners explicitly invite repeat submissions.
-> Unofficial tool — not affiliated with Microsoft.
+> Built for open, anonymous forms where the owner is fine with repeat submissions.
+> Unofficial tool, not affiliated with Microsoft.
 
-![Quorum mid-run: chat-style log rows streaming in, a progress bar at 4 of 12, and ok/skipped tallies](docs/preview.png)
+![Quorum mid-run, log rows streaming in with the progress bar at 4 of 12](docs/preview.png)
 
-## The Idea
+## What it is
 
-Some forms are meant to be stuffed — vote-for-the-office-dog polls, "say hi as
-many times as you like" boards. Doing that by hand gets old after the third
-submission. Quorum automates it, and it isn't hardcoded to any one form: each
-form is a tiny profile file, and the engine and UI never change.
+Some forms are meant to be spammed a little. Office polls, "drop a message" boards, that kind of thing. Submitting by hand gets old fast, so this automates it.
 
-Four pieces, kept separate:
+It's not hardcoded to one form. Each form gets a small profile file, and that's the only thing you ever edit:
 
-1. **Engine** (`submitter.py`) — drives chromium via Playwright: loads the form
-   fresh each iteration, fills it, clicks Submit, waits for the thank-you text,
-   sleeps a random polite delay, repeats. Emits structured events instead of
-   printing, and checks a stop flag between iterations.
-2. **Profiles** (`profiles/*.py`) — one file per form exposing `NAME`, `URL`,
-   and `fill(page)`. The only thing you edit for a new form.
-3. **Server** (`server.py`) — FastAPI; runs the engine in a worker thread and
-   streams its events to the browser over Server-Sent Events.
-4. **Front end** (`web/`) — one static page, hand-written CSS, vanilla JS.
-   No framework, no build step.
+- `submitter.py` is the engine. It opens chromium with Playwright, fills the form, clicks Submit, waits for the thank you text, sleeps a random delay, then repeats. It reports everything as events and checks a stop flag between rounds.
+- `profiles/` holds one file per form: a `NAME`, a `URL`, and a `fill(page)` function.
+- `server.py` is a small FastAPI app that runs the engine in a thread and streams its events to the page over SSE.
+- `web/` is the UI. One static page, plain CSS and JS, no build step.
 
 ## Install
 
-Python 3.10+ required.
+Needs Python 3.10+.
 
 ```powershell
 pip install -r requirements.txt
-playwright install chromium     # one-time browser download
+playwright install chromium
 ```
 
 ## Run
@@ -42,53 +33,37 @@ playwright install chromium     # one-time browser download
 uvicorn server:app
 ```
 
-Quorum runs as a local server — open the localhost URL uvicorn prints
-(by default `http://127.0.0.1:8000`). On Windows you can also just
-double-click `Quorum.bat`, which starts the server and opens the browser for
-you; close its window to stop.
+Then open the localhost URL it prints, usually `http://127.0.0.1:8000`. On Windows you can also double-click `Quorum.bat`, which starts the server and opens the browser for you. Close its window to stop.
 
-## Adding a Form
+## Adding a form
 
-1. Record a walkthrough of the form once:
+1. Record yourself filling the form once:
 
    ```powershell
    playwright codegen "https://forms.office.com/r/your-form-id"
    ```
 
-2. Copy `profiles/example_form.py` to a new file, set `NAME` and `URL`, and
-   paste the generated `page.*` lines into `fill(page)` — but **skip** the
-   `page.goto(...)` line and the final Submit click (the engine does both).
-3. Randomize at least one free-text answer with `random` (see the example) so
-   submissions aren't byte-identical.
-4. Hit the Reload button next to the profile dropdown.
+2. Copy `profiles/example_form.py`, set `NAME` and `URL`, and paste the recorded `page.*` lines into `fill(page)`. Skip the `page.goto(...)` line and the final Submit click, the engine handles those.
+3. Randomize at least one text answer (the example shows how) so the submissions aren't all identical.
+4. Hit Reload next to the profile dropdown.
 
-Note: `.gitignore` keeps your personal profiles out of the repo by default
-(they contain your form URLs); only the example template is tracked.
+Heads up: `.gitignore` ignores everything in `profiles/` except the example, so your own form URLs don't end up in the repo.
 
-## Using the UI
+## The UI
 
-- **Profile** — pick the form; Reload re-scans `profiles/`.
-- **Submissions** — how many times to submit (default 10).
-- **Delay min / max (s)** — each pause between submissions is drawn at random
-  from this range (default 2–6 s).
-- **Run hidden** — on runs chromium headless; off shows the browser window so
-  you can watch it fill the form.
-- **Start / Stop** — Start streams chat-style log rows with a live progress
-  bar and ok/skipped tallies; Stop halts after the in-flight submission.
+- **Profile** picks the form. Reload re-scans the folder.
+- **Submissions** is how many times to submit. Default 10.
+- **Delay min/max** sets the random pause between submissions, default 2 to 6 seconds.
+- **Run hidden** runs the browser headless. Turn it off if you want to watch chromium fill the form, which is honestly the fun part.
+- **Start / Stop**. Stop finishes the submission it's on, then quits.
 
-Dark mode is the default; the toggle in the left rail flips to light. Fully
-keyboard navigable, and all motion respects `prefers-reduced-motion`.
+Dark mode by default, toggle in the left rail. Works fine with keyboard only and respects reduced motion settings.
 
-## Rules of Engagement
+## Please be reasonable
 
-- Automated submission is against Microsoft's Terms of Service, and high rates
-  get rate-limited or temporarily blocked. **Keep volume reasonable** — the
-  modest defaults are deliberate, and the random delays exist to be polite to
-  the server, nothing more.
-- A form set to one-response-per-person, or one with a CAPTCHA, will bounce.
-  That usually means the owner didn't want multi-submit — respect that.
-- Quorum deliberately includes no CAPTCHA solving, proxy rotation, or anything
-  meant to defeat bot detection, and it never will.
+- Automating form submissions is against Microsoft's ToS, and if you go too fast you'll get rate-limited or temporarily blocked anyway. Keep the counts low and the delays generous.
+- If a form is set to one response per person or has a CAPTCHA, it will bounce. That's the owner telling you they don't want this. Listen to them.
+- There's no CAPTCHA solving, proxy rotation, or any anti-bot tricks in here, and there never will be.
 
 ## License
 

@@ -7,7 +7,7 @@ A small local web app that submits an online form over and over for you, with a 
 
 ![Quorum mid-run, log rows streaming in with the progress bar at 4 of 12](docs/preview.png)
 
-## What it is
+## What It Is
 
 Some forms are meant to be spammed a little. Office polls, "drop a message" boards, that kind of thing. Submitting by hand gets old fast, so this automates it.
 
@@ -35,7 +35,7 @@ uvicorn server:app
 
 Then open the localhost URL it prints, usually `http://127.0.0.1:8000`. On Windows you can also double-click `Quorum.bat`, which starts the server and opens the browser for you. Close its window to stop.
 
-## Adding a form
+## Adding a Form
 
 1. Record yourself filling the form once:
 
@@ -59,7 +59,7 @@ Heads up: `.gitignore` ignores everything in `profiles/` except the example, so 
 
 Dark mode by default, toggle in the left rail. Works fine with keyboard only and respects reduced motion settings.
 
-## Please be reasonable
+## Please Be Reasonable
 
 - Automating submissions is usually against a form host's terms of service, and if you go too fast you'll get rate-limited or temporarily blocked anyway. Keep the counts low and the delays generous.
 - If a form is set to one response per person or has a CAPTCHA, it will bounce. That's the owner telling you they don't want this. Listen to them.

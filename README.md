@@ -1,9 +1,9 @@
 # Quorum
 
-A small local web app that submits a Microsoft Form over and over for you, with a live console so you can watch it go.
+A small local web app that submits an online form over and over for you, with a live console so you can watch it go.
 
 > Built for open, anonymous forms where the owner is fine with repeat submissions.
-> Unofficial tool, not affiliated with Microsoft.
+> Unofficial tool, not affiliated with any form provider.
 
 ![Quorum mid-run, log rows streaming in with the progress bar at 4 of 12](docs/preview.png)
 
@@ -40,7 +40,7 @@ Then open the localhost URL it prints, usually `http://127.0.0.1:8000`. On Windo
 1. Record yourself filling the form once:
 
    ```powershell
-   playwright codegen "https://forms.office.com/r/your-form-id"
+   playwright codegen "https://your-form-host.example/your-form-id"
    ```
 
 2. Copy `profiles/example_form.py`, set `NAME` and `URL`, and paste the recorded `page.*` lines into `fill(page)`. Skip the `page.goto(...)` line and the final Submit click, the engine handles those.
@@ -61,7 +61,7 @@ Dark mode by default, toggle in the left rail. Works fine with keyboard only and
 
 ## Please be reasonable
 
-- Automating form submissions is against Microsoft's ToS, and if you go too fast you'll get rate-limited or temporarily blocked anyway. Keep the counts low and the delays generous.
+- Automating submissions is usually against a form host's terms of service, and if you go too fast you'll get rate-limited or temporarily blocked anyway. Keep the counts low and the delays generous.
 - If a form is set to one response per person or has a CAPTCHA, it will bounce. That's the owner telling you they don't want this. Listen to them.
 - There's no CAPTCHA solving, proxy rotation, or any anti-bot tricks in here, and there never will be.
 
